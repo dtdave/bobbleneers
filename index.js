@@ -1,14 +1,10 @@
 const express = require("express");
-const axios = require("axios");
+import axios from "axios";
 
 const app = express();
 
-// Post ID tracker
-var num = 0;
-
 setInterval(() => {
   // Increment post tracker
-  num++;
   console.log("Wait for 2 second...");
 
   // Make GET Request on every 2 second
