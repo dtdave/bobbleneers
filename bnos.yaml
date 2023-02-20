@@ -36,4 +36,4 @@ spec:
             - name: tenantUri
               value: "<dynatraceURL>"
             - name: tenantToken
-              value: "<dynatraceToken"
+              value: "<dynatraceToken>"
