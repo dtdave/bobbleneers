@@ -22,7 +22,7 @@ spec:
         app.kubernetes.io/name: orderservice
         app.kubernetes.io/version: "1"
         app.kubernetes.io/component: service
-        app.kubernetes.io/part-of: dbic
+        app.kubernetes.io/part-of: bnos
         app.kubernetes.io/created-by: suchcodewow
       annotations:
         owner: Bobbleneers
