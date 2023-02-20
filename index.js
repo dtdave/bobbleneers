@@ -1,14 +1,11 @@
-const express = require("express");
+//const express = require("express");
 const axios = require("axios").default;
 const crypto = require("crypto");
-
-const app = express();
-
-console.log("URL: ");
+//const app = express();
 
 const uri = "https://" + process.env.tenantUri + "/api/v2/logs/ingest";
 const token = process.env.tenantToken;
-//console.log("uri", uri);
+console.log("uri: ", uri);
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -168,6 +165,7 @@ const newPost = async () => {
 
   const customeruid = crypto.randomUUID();
   const orderid = crypto.randomUUID();
+  console.log("order id: ", orderid);
   const shipDelay = getRandomInt(18, 28);
   const logDate = new Date();
   const dateModifier = getRandomInt(0, 14);
@@ -222,7 +220,6 @@ const newPost = async () => {
       warehouseLocation = "Oregon";
       break;
   }
-  console.log(mondayDelay);
 
   if (warehouseLocation == "Nevada") {
     //BAD scenario - likely too long and customer unhappy
@@ -249,8 +246,6 @@ const newPost = async () => {
     review = goodFeedback[Math.floor(Math.random() * goodFeedback.length)];
     rating = getRandomInt(3, 5);
   }
-  console.log("base ", baseDate, shipTime, review);
-  //return customeruid;
 
   const orderTaken = {
     company: "Bobbleneers",
@@ -337,7 +332,7 @@ const sendPostRequest = async () => {
   const data = await newPost();
   try {
     const resp = await axios.post(uri, data, { headers: headers });
-    console.log("data", resp);
+    console.log("successful response: ", resp.status);
   } catch (err) {
     // Handle Error Here
     console.error(err);

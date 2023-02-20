@@ -1,0 +1,5 @@
+services:
+  bnos:
+    build: .
+    container_name: bnos
+    image: suchcodewow/bnos-orderservice
