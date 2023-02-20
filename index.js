@@ -2,6 +2,7 @@ const express = require("express");
 import axios from "axios";
 
 const app = express();
+console.log("URL: ");
 
 setInterval(() => {
   // Increment post tracker
