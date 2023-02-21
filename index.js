@@ -264,10 +264,12 @@ const newPost = async () => {
   };
   const orderReview = {
     company: "Bobbleneers",
+    content: "Review submitted successfully",
     serviceName: "reviews",
     timestamp: new Date(),
     serviceEvent: "reviewreceived",
     customerID: customeruid,
+    orderid: orderid,
     log: "/var/log/reviewservice",
     rating: rating,
     review: review,
@@ -277,6 +279,7 @@ const newPost = async () => {
   const orderLightningDist = {
     company: "Bobbleneers",
     serviceName: "lightningDistribution",
+    content: "LightningDistribution successful",
     timestamp: new Date(),
     serviceEvent: "warehousedistribution",
     orderid: orderid,
@@ -290,6 +293,7 @@ const newPost = async () => {
   const orderBatchDist = {
     company: "Bobbleneers",
     serviceName: "oldfaithfulDistribution",
+    content: "Monday night batch successful",
     timestamp: new Date(),
     serviceEvent: "warehousedistribution",
     orderid: orderid,
@@ -302,6 +306,7 @@ const newPost = async () => {
   };
   const orderShipment = {
     company: "Bobbleneers",
+    content: "Order Shipped",
     serviceName: "shipping",
     serviceEvent: "shipped",
     warehouse: warehouseLocation,
@@ -313,6 +318,7 @@ const newPost = async () => {
   };
   const orderDelivered = {
     company: "Bobbleneers",
+    content: "Order Delivered",
     serviceName: "shipping",
     serviceEvent: "delivered",
     timestamp: new Date(),
