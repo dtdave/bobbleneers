@@ -3,26 +3,26 @@ kind: Namespace
 metadata:
   name: bnos
 
-# Order Service - Logs Version
+# Order Service - Bizevents version
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: orderservice
+  name: orderservicebiz
   namespace: bnos
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/part-of: bnos
-      app.kubernetes.io/name: orderservice
+      app.kubernetes.io/name: orderservicebiz
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: orderservice
+        app.kubernetes.io/name: orderservicebiz
         app.kubernetes.io/version: "1"
         app.kubernetes.io/component: service
-        app.kubernetes.io/part-of: bnos
+        app.kubernetes.io/part-of: bnosbiz
         app.kubernetes.io/created-by: suchcodewow
       annotations:
         owner: Bobbleneers
@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: orderservice
-          image: suchcodewow/bnos-orderservice:latest
+          image: suchcodewow/bnos-orderservicebiz:latest
           imagePullPolicy: Always
           env:
             - name: tenantUri
