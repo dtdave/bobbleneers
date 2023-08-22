@@ -162,7 +162,6 @@ const newPost = async () => {
       " to show them, but I still haven't got it yet.  Company did refund shipping as promised.",
     "Confidence totally shaken in an otherwise outstanding company.  Their new shipping service is awful.  Immediately requested shipping refund.",
   ];
-
   const customeruid = crypto.randomUUID();
   const orderid = crypto.randomUUID();
   console.log("order id: ", orderid);
