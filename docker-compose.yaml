@@ -1,10 +1,5 @@
 services:
   bnos:
-    build: logs/.
+    build: .
     container_name: bnos
     image: suchcodewow/bnos-orderservice
-
-  bnosbiz:
-    build: bizevents/.
-    container_name: bnosbiz
-    image: suchcodewow/bnos-orderservicebiz
