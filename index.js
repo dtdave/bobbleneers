@@ -345,7 +345,7 @@ const sendPostRequest = async () => {
   }
 };
 
-// setInterval(() => {
-//   sendPostRequest();
-// }, 2000);
-sendPostRequest();
+setInterval(() => {
+  sendPostRequest();
+}, 2000);
+// sendPostRequest();
