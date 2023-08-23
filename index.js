@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const uri = "https://" + process.env.tenantUri + "/api/v2/logs/ingest";
 const token = process.env.tenantToken;
 console.log("uri: ", uri);
+console.log("token", token);
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -344,6 +345,7 @@ const sendPostRequest = async () => {
   }
 };
 
-setInterval(() => {
-  sendPostRequest();
-}, 2000);
+// setInterval(() => {
+//   sendPostRequest();
+// }, 2000);
+sendPostRequest();
