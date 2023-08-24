@@ -1,16 +1,21 @@
+// Variables
 const axios = require("axios").default;
 const crypto = require("crypto");
 const querystring = require("querystring");
 if (!process.env.tenantUri) {
   console.log("Warning!  Variables not set!");
 }
-const uri = "https://" + process.env.tenantUri + "/api/v2/logs/ingest";
+const authUri = "https://sso.dynatrace.com/sso/oauth2/token";
+const logUri = "https://" + process.env.tenantUri + "/api/v2/logs/ingest";
+const bizUri = "https://" + process.env.tenantUri + "/api/v2/bizevents/ingest";
+
 const token = process.env.tenantToken;
 const oAuthClientId = process.env.clientId;
 const oAuthSecret = process.env.clientSecret;
 var oAuthCredentials; // oAuth creds
 var oAuthTimer = new Date(); // set a timer for refreshing oAuth token
-console.log("startup!");
+
+//Functions
 function setTimer(minutes) {
   rightNow = new Date();
   // console.log(rightNow);
@@ -22,12 +27,6 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-const headers = {
-  accept: "application/json; charset=utf-8",
-  "Content-type": "application/json; charset=utf-8",
-  Authorization: "Api-Token " + token,
-};
 
 const names = [
   "Richard L. Lambert",
@@ -155,9 +154,9 @@ function getGoodFeedback(productNickName) {
     "I can't believe I have " +
       productNickName +
       " with me all of the time.  I imagine they're cheering '" +
-      customerName +
+      productNickName +
       "! " +
-      customerName +
+      productNickName +
       "!'  every time I write an email.",
   ];
   review = feedback[Math.floor(Math.random() * feedback.length)];
@@ -234,8 +233,9 @@ function warehouse() {
   return warehouseLocation;
 }
 
-const newPost = async () => {
+const newData = async () => {
   const logIngest = [];
+  const bizIngest = [];
   const customerName = names[Math.floor(Math.random() * names.length)];
   const productOrdered = names[Math.floor(Math.random() * names.length)];
   const productNickName = productOrdered.split(" ")[0];
@@ -276,7 +276,7 @@ const newPost = async () => {
     review = getGoodFeedback(productNickName);
     rating = getRandomInt(3, 5);
   }
-
+  // Log Event Creation
   const orderTaken = {
     company: "Bobbleneers",
     serviceName: "orders",
@@ -358,33 +358,101 @@ const newPost = async () => {
     event: deliveryTime,
   };
   logIngest.push(orderTaken, orderReview, orderLightningDist, orderShipment, orderDelivered);
-  if (scenarioNumber == 1) {
+  if (warehouseLocation == "Nevada") {
     logIngest.push(orderBatchDist);
   }
-  return logIngest;
+
+  // BizEvents version.  OW my brain.
+  const cloudEventOrderTaken = {
+    specversion: "1.0",
+    id: orderid,
+    source: "bobbleneers.local.orders",
+    type: "com.bobbleneers.orders",
+    data: orderTaken,
+  };
+  const cloudEventOrderReview = {
+    specversion: "1.0",
+    id: orderid,
+    source: "bobbleneers.local.reviews",
+    type: "com.bobbleneers.reviews",
+    data: orderReview,
+  };
+  const cloudEventOrderLightningDist = {
+    specversion: "1.0",
+    id: orderid,
+    source: "bobbleneers.local.lightning",
+    type: "com.bobbleneers.lightning",
+    data: orderLightningDist,
+  };
+  const cloudEventorderBatchDist = {
+    specversion: "1.0",
+    id: orderid,
+    source: "bobbleneers.local.batch",
+    type: "com.bobbleneers.batch",
+    data: orderBatchDist,
+  };
+  const cloudEventOrderShipment = {
+    specversion: "1.0",
+    id: orderid,
+    source: "bobbleneers.local.shipment",
+    type: "com.bobbleneers.shipment",
+    data: orderShipment,
+  };
+  const cloudEventOrderDelivered = {
+    specversion: "1.0",
+    id: orderid,
+    source: "bobbleneers.local.delivery",
+    type: "com.bobbleneers.delivery",
+    data: orderDelivered,
+  };
+  bizIngest.push(
+    cloudEventOrderTaken,
+    cloudEventOrderReview,
+    cloudEventOrderLightningDist,
+    cloudEventOrderShipment,
+    cloudEventOrderDelivered
+  );
+  if (warehouseLocation == "Nevada") {
+    bizIngest.push(cloudEventorderBatchDist);
+  }
+  const ingest = { bizIngest: bizIngest, logIngest: logIngest };
+  return ingest;
 };
 
-const sendPostRequest = async () => {
-  const data = await newPost();
+const sendLogEntry = async (data) => {
+  const headers = {
+    accept: "application/json; charset=utf-8",
+    "Content-type": "application/json; charset=utf-8",
+    Authorization: "Api-Token " + token,
+  };
   try {
-    const resp = await axios.post(uri, data, { headers: headers });
-    console.log("successful response: ", resp.status);
+    const resp = await axios.post(logUri, data, { headers: headers });
+    console.log("Log write successful: HTTP ", resp.status);
   } catch (err) {
-    // Handle Error Here
-    console.error(err.response.status);
+    console.error("Log write failed: ", err.response.status);
   }
 };
 
-const sendBizEvents = async () => {
+const sendBizEvent = async (data) => {
+  // check oAuth
   const currentDate = new Date();
-  //console.log("starting auth", oAuthCredentials);
-  //console.log(oAuthTimer);
   const authTimeRemaining = (oAuthTimer.getTime() - currentDate.getTime()) / 1000;
   if (authTimeRemaining < 60) {
     console.log("Refreshing oAuth. Expiration in: ", authTimeRemaining, "s.");
     await getAuth();
   }
-  // console.log("final auth", oAuthCredentials);
+  const headers = {
+    Authorization: "Bearer " + oAuthCredentials,
+  };
+
+  // Try to Write to API
+  try {
+    const resp = await axios.post(bizUri, data, { headers: headers });
+    console.log("bizEvent write successful: HTTP ", resp.status);
+  } catch (err) {
+    // Handle Error Here
+    console.error("BizEvent write failed: ", err.response);
+  }
 };
 
 const getAuth = async () => {
@@ -396,9 +464,9 @@ const getAuth = async () => {
     client_id: oAuthClientId,
     client_secret: oAuthSecret,
   };
-  const endPoint = "https://sso.dynatrace.com/sso/oauth2/token";
+
   try {
-    const resp = await axios.post(endPoint, querystring.stringify(data), { headers: oAuthHeaders });
+    const resp = await axios.post(authUri, querystring.stringify(data), { headers: oAuthHeaders });
     if (resp.status == 200) {
       oAuthCredentials = resp.data.access_token;
       oAuthTimer = setTimer(resp.data.expires_in);
@@ -411,10 +479,12 @@ const getAuth = async () => {
   console.log("refreshed token.  Timer is: ", oAuthTimer);
 };
 
-// setInterval(() => {
-//   sendPostRequest();
-//
-// sendPostRequest();
+async function main() {
+  const data = await newData();
+  sendLogEntry(data.logIngest);
+  sendBizEvent(data.bizIngest);
+}
+
 setInterval(() => {
-  sendBizEvents();
+  main();
 }, 2000);
