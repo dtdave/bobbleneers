@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: orderservice
-          image: suchcodewow/bnos-orderservice:latest
+          image: suchcodewow/bnos-orderservice:bizevents
           imagePullPolicy: Always
           env:
             - name: tenantUri
