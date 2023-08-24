@@ -3,7 +3,8 @@ const axios = require("axios").default;
 const crypto = require("crypto");
 const querystring = require("querystring");
 if (!process.env.tenantUri) {
-  console.log("Warning!  Variables not set!");
+  console.log("ERROR: tenant URL not set!");
+  process.exit();
 }
 const authUri = "https://sso.dynatrace.com/sso/oauth2/token";
 const logUri = "https://" + process.env.tenantUri + "/api/v2/logs/ingest";
@@ -14,14 +15,9 @@ const oAuthClientId = process.env.clientId;
 const oAuthSecret = process.env.clientSecret;
 var oAuthCredentials; // oAuth creds
 var oAuthTimer = new Date(); // set a timer for refreshing oAuth token
+var firstAttempt = true; //used when trying to reauthenticate
 
 //Functions
-function setTimer(minutes) {
-  rightNow = new Date();
-  // console.log(rightNow);
-  return new Date(rightNow.getTime() + minutes * 60000);
-}
-
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -365,44 +361,44 @@ const newData = async () => {
   // BizEvents version.  OW my brain.
   const cloudEventOrderTaken = {
     specversion: "1.0",
-    id: orderid,
-    source: "bobbleneers.local.orders",
-    type: "com.bobbleneers.orders",
+    "event.id": orderid,
+    "event.provider": "bobbleneers.local.orders",
+    "event.type": "com.bobbleneers.orders",
     data: orderTaken,
   };
   const cloudEventOrderReview = {
     specversion: "1.0",
-    id: orderid,
-    source: "bobbleneers.local.reviews",
-    type: "com.bobbleneers.reviews",
+    "event.id": orderid,
+    "event.provider": "bobbleneers.local.reviews",
+    "event.type": "com.bobbleneers.reviews",
     data: orderReview,
   };
   const cloudEventOrderLightningDist = {
     specversion: "1.0",
-    id: orderid,
-    source: "bobbleneers.local.lightning",
-    type: "com.bobbleneers.lightning",
+    "event.id": orderid,
+    "event.provider": "bobbleneers.local.lightning",
+    "event.type": "com.bobbleneers.lightning",
     data: orderLightningDist,
   };
   const cloudEventorderBatchDist = {
     specversion: "1.0",
-    id: orderid,
-    source: "bobbleneers.local.batch",
-    type: "com.bobbleneers.batch",
+    "event.id": orderid,
+    "event.provider": "bobbleneers.local.batch",
+    "event.type": "com.bobbleneers.batch",
     data: orderBatchDist,
   };
   const cloudEventOrderShipment = {
     specversion: "1.0",
-    id: orderid,
-    source: "bobbleneers.local.shipment",
-    type: "com.bobbleneers.shipment",
+    "event.id": orderid,
+    "event.provider": "bobbleneers.local.shipment",
+    "event.type": "com.bobbleneers.shipment",
     data: orderShipment,
   };
   const cloudEventOrderDelivered = {
     specversion: "1.0",
-    id: orderid,
-    source: "bobbleneers.local.delivery",
-    type: "com.bobbleneers.delivery",
+    "event.id": orderid,
+    "event.provider": "bobbleneers.local.delivery",
+    "event.type": "com.bobbleneers.delivery",
     data: orderDelivered,
   };
   bizIngest.push(
@@ -434,24 +430,31 @@ const sendLogEntry = async (data) => {
 };
 
 const sendBizEvent = async (data) => {
-  // check oAuth
-  const currentDate = new Date();
-  const authTimeRemaining = (oAuthTimer.getTime() - currentDate.getTime()) / 1000;
-  if (authTimeRemaining < 60) {
-    console.log("Refreshing oAuth. Expiration in: ", authTimeRemaining, "s.");
-    await getAuth();
-  }
   const headers = {
     Authorization: "Bearer " + oAuthCredentials,
   };
-
-  // Try to Write to API
   try {
     const resp = await axios.post(bizUri, data, { headers: headers });
     console.log("bizEvent write successful: HTTP ", resp.status);
+    firstAttempt = true;
   } catch (err) {
-    // Handle Error Here
-    console.error("BizEvent write failed: ", err.response);
+    if (err.response.status == 401) {
+      // UnAuthorized - usually token doesn't exist/expired
+      if (firstAttempt) {
+        // Likely need new token
+        console.log("First unauthorized response. Refreshing token.");
+        firstAttempt = false;
+        await getAuth();
+        await sendBizEvent(data);
+      } else {
+        // Refresh failed.
+        console.log("Refresh failed.  Exiting.");
+        process.exit();
+      }
+    } else {
+      console.error("UNHANDLED BizEvent write failed: HTTPS ", err.response.status, " (", err.response.statusText, ")");
+      process.exit();
+    }
   }
 };
 
@@ -469,22 +472,33 @@ const getAuth = async () => {
     const resp = await axios.post(authUri, querystring.stringify(data), { headers: oAuthHeaders });
     if (resp.status == 200) {
       oAuthCredentials = resp.data.access_token;
-      oAuthTimer = setTimer(resp.data.expires_in);
     } else {
       console.log("Boo. I got non-200 response: ", resp.status);
     }
   } catch (err) {
     console.error(err);
   }
-  console.log("refreshed token.  Timer is: ", oAuthTimer);
+  console.log("refreshed token.");
 };
 
 async function main() {
+  // Load us up a spicy new instance of our business process
   const data = await newData();
-  sendLogEntry(data.logIngest);
-  sendBizEvent(data.bizIngest);
+  // Send log version
+  if (token) {
+    sendLogEntry(data.logIngest);
+  } else {
+    console.log("no API token, skipping log entry");
+  }
+  // Send bizEvent version
+  if (oAuthClientId && oAuthSecret) {
+    sendBizEvent(data.bizIngest);
+  } else {
+    console.log("no oAuth ID/Secret, skipping bizEvent");
+  }
 }
 
+// Main Loop
 setInterval(() => {
   main();
 }, 2000);
