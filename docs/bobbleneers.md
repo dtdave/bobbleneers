@@ -20,6 +20,7 @@ Overview
 *   [Deployment](#deployment)
 
 
+
 Bobbleneers
 ===========
 
@@ -63,6 +64,7 @@ To make things even more infuriating, the team must wait 2 weeks for reviews and
 Knowing their software system must work well, Bobbleneers implemented Dynatrace on their Ordering system. Dynatrace quickly and clearly showed that the Order UI is working perfectly and all orders are submitted successfully.
 
 With the power of logs on Grail, Bobbleneers intends to gain visibility into their shipping workflow, fix the problem, and restore Bobbleneers’ public image.
+
 
 
 ### Services involved
