@@ -1,24 +1,24 @@
-<a name="Overview"></a>
 Overview
 ===
 
-*   [Overview](#Overview)
-    *   [Pepper](#Pepper)
-*   [Case Study](#CaseStudy)
-*   [Bobbleneers and Dynatrace](#BobbleneersandDynatrace)
-    *   [Services Involved](#ServicesInvolved)
-*   [Scenario 1](#Scenario1)
-    *   [Shipment to Delivery](#ShipmenttoDelivery)
-    *   [Shipment Times by Warehouse](#Shipmenttimesbywarehouse)
-*   [Scenario 2](#Scenario2)
-    *   [Full Process Observability](#FullProcessObservability)
-*   [Scenario 3](#Scenario3)
-    *   [Zeroing In](#ZeroingIn)
-    *   [Shocked Realization](#Shockedrealization)
-*   [Getting Proactive](#GettingProactive)
-*   [Bonus Scenarios](#Bonusscenarios)
-    *   [Confirm Mid-week Spikes](#Confirmmid-weekspikes)
-*   [Deployment](#Deployment)
+*   [Overview](#overview)
+    *   [Pepper](#pepper)
+*   [Case Study](#case-study)
+*   [Bobbleneers and Dynatrace](#bobbleneers-and-dynatrace)
+    *   [Services Involved](#services-involved)
+*   [Scenario 1](#scenario-1)
+    *   [Shipment to Delivery](#shipment-to-delivery)
+    *   [Shipment Times by Warehouse](#shipment-times-by-warehouse)
+*   [Scenario 2](#scenario-2)
+    *   [Full Process Observability](#full-process-observability)
+*   [Scenario 3](#scenario-3)
+    *   [Zeroing In](#zeroing-in)
+    *   [Shocked Realization](#shocked-realization)
+*   [Getting Proactive](#getting-proactive)
+*   [Bonus Scenarios](#bonus-scenarios)
+    *   [Confirm Mid-week Spikes](#confirm-mid-week-spikes)
+*   [Deployment](#deployment)
+
 
 
 Bobbleneers
@@ -34,12 +34,12 @@ Bobbleneers
     [\->](https://suchcodewow.io/docs/pepper/apps/bnos#services-involved)
 
 :::
-<a name="Pepper"></a>
+
 ### Pepper
 
 [Pepper](https://github.com/dtdave/scw/blob/Main/docs/pepper/pepper.md) is a great way to deploy this application on a kubernetes cluster in the cloud of your choice.
 
-<a name="CaseStudy"></a>
+
 Case Study
 ----------
 
@@ -51,7 +51,7 @@ This year, Bobbleneers leadership decided to improve their aging shipment servic
 
 They are guaranteeing delivery to your door in a flash… but **everything isn’t working out as planned**…
 
-<a name="BobbleneersandDynatrace"></a>
+
 Bobbleneers and Dynatrace
 -------------------------
 
@@ -65,13 +65,14 @@ Knowing their software system must work well, Bobbleneers implemented Dynatrace 
 
 With the power of logs on Grail, Bobbleneers intends to gain visibility into their shipping workflow, fix the problem, and restore Bobbleneers’ public image.
 
-<a name="Servicesinvolved"></a>
+
+
 ### Services involved
 
-<a name="Scenario1"></a>
+
 Scenario 1
 ----------
-<a name="ShipmenttoDelivery"></a>
+
 ### Shipment to Delivery
 
 :::info tl;dr
@@ -94,7 +95,7 @@ Nearly all orders are taking less than 24 hours. Shipment managers are doing a g
 
 ![shipments](./Bobbleneers _ suchcodewow_files/transit.BbPVlSV7_eePKl.webp)
 
-<a name="Shipmenttimesbywarehouse"></a>
+
 ### Shipment times by warehouse
 
 Discovering the value of combining data this way, the Bobbleneer team saves a rolling weekly view to a dashboard.
@@ -103,7 +104,7 @@ Discovering the value of combining data this way, the Bobbleneer team saves a ro
 
 ![weekly](./Bobbleneers _ suchcodewow_files/weeklywarehouse.BtxzSNPZ_28hvIv.webp)
 
-<a name="Scenario2"></a>
+
 Scenario 2
 ----------
 
@@ -117,7 +118,7 @@ Scenario 2
 
 :::
 
-<a name="FullProcessObservability"></a>
+
 ### Full Process Observability
 
 Realizing it’s not a simple logistics problem, the Bobbleneers support team worked with developers to **track the entire business process**. They expanded visibility to include:
@@ -137,7 +138,7 @@ The results provided by Grail were instant:
 
 But why? LightningBobble triggers on every order & the team knows every order is sent. There must be a distribution issue specifically in the Nevada warehouse.
 
-<a name="Scenario3"></a>
+
 Scenario 3
 ----------
 
@@ -147,14 +148,14 @@ Scenario 3
 *   With the examples in hand, they can use an adhoc Grail search to easily “trace” every instance of that order id across all systems.
 
 :::
-<a name="ZeroingIn"></a>
+
 ### Zeroing in
 
 Finally, the team combined what they learned to find bad orders coming out of Nevada.
 
     fetch logs, from: -5d| filter company == "Bobbleneers"| fieldsAdd dayofWeek = formatTimestamp(toTimestamp(event), format: "E")| summarize dayofWeek=takeFirst(dayofWeek), warehouse = takeFirst(warehouse), rating = takeFirst(rating), by: orderid| filter rating == "1" and warehouse == "Nevada" and dayofWeek == "Tue"| limit 5
 
-<a name="ShockedRealization"></a>
+
 ### _shocked realization_
 
 They traced an order.
@@ -170,7 +171,7 @@ Root cause is immediately obvious!
 
 Once developers saw the issue, they quickly updated BobbleLightning to version 1.3 in Nevada. Then the support team retired the batch system.
 
-<a name="GettingProactive"></a>
+
 Getting Proactive
 -----------------
 
@@ -178,11 +179,11 @@ The Bobbleneers team saved the day with Grail. But they wanted to make sure to h
 
 Building on their dashboard widget for shipping, the team added a query to watch
 
-<a name="BonusScenarios"></a>
+
 Bonus scenarios
 ---------------
 
-<a name="Confirmmid-weekspikes"></a>
+
 ### Confirm mid-week spikes
 
 Armed with the knowledge that they need to focus on:
@@ -196,7 +197,7 @@ the team used Grail to confirm bad reviews spike up mid-week.
 
 ![reviews](./Bobbleneers _ suchcodewow_files/reviewsbyday.DQ3nujpN_ZdOOPJ.webp)
 
-<a name="Deployment"></a>
+
 Deployment
 ----------
 
